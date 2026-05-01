@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live USD to BDT exchange rate with Bangladesh's 2.5% government remittance incentive.">
+<title>P2PCalculator — USD → BDT Live Rate</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Hind+Siliguri:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────────── */
+:root {
+  --ink:        #1a1a14;
+  --ink-mid:    #3d3d2e;
+  --ink-soft:   #7a7a60;
+  --ink-faint:  #b5b59a;
+  --cream:      #f5f2e8;
+  --cream-warm: #ede9d8;
+  --cream-deep: #e2ddc8;
+  --forest:     #1e4035;
+  --forest-mid: #2a5a49;
+  --forest-lt:  #3d7a62;
+  --gold:       #b08d3e;
+  --gold-lt:    #d4a94e;
+  --teal:       #2e8b72;
+  --teal-lt:    #3aab8c;
+
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-ui:      'DM Sans', system-ui, sans-serif;
+  --font-bn:      'Hind Siliguri', system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── RESET ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.bn { font-family: var(--font-bn); }
+
+/* ─── HERO ────────────────────────────────────────────────────── */
+#hero {
+  min-height: 100svh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--forest);
+  overflow: hidden;
+}
+
+/* Texture overlay */
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(61,122,98,.35) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Subtle grid lines */
+#hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(245,242,232,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,242,232,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+/* ── Topbar ── */
+#topbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 36px;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeUp .6s var(--ease-out) .1s forwards;
+}
+
+#brand {
+  font-family: var(--font-display);
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: rgba(245,242,232,.75);
+  text-decoration: none;
+  cursor: default;
+}
+
+#lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(245,242,232,.08);
+  border: 1px solid rgba(245,242,232,.15);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  color: rgba(245,242,232,.5);
+  font-family: inherit;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .05em;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+}
+.lang-btn.active {
+  background: rgba(245,242,232,.12);
+  color: rgba(245,242,232,.95);
+}
+
+/* ── Main rate block ── */
+#rate-block {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px 60px;
+  gap: 0;
+}
+
+/* Incentive tag */
+#incentive-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(176,141,62,.18);
+  border: 1px solid rgba(176,141,62,.35);
+  border-radius: 3px;
+  color: var(--gold-lt);
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp .5s var(--ease-out) .5s forwards;
+}
+
+/* Big rate */
+#boosted-rate {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 14vw, 9.5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--cream);
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: fadeUp .7s var(--ease-out) .35s forwards;
+}
+
+#boosted-rate .currency-sym {
+  font-size: .5em;
+  font-weight: 600;
+  color: rgba(245,242,232,.6);
+  vertical-align: .18em;
+  margin-right: .04em;
+}
+
+/* Market rate row */
+#market-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  opacity: 0;
+  animation: fadeUp .5s var(--ease-out) .6s forwards;
+}
+
+#market-rate {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-weight: 300;
+  color: rgba(245,242,232,.45);
+  letter-spacing: .01em;
+}
+
+#market-label {
+  font-size: .7rem;
+  font-weight: 400;
+  color: rgba(245,242,232,.28);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(245,242,232,.12);
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+/* Timestamp row */
+#status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  opacity: 0;
+  animation: fadeUp .5s var(--ease-out) .75s forwards;
+}
+
+#pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74,222,128,.4);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+#timestamp {
+  font-size: .72rem;
+  color: rgba(245,242,232,.35);
+  letter-spacing: .04em;
+}
+
+/* Scroll cue */
+#scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  animation: fadeUp .5s var(--ease-out) 1.1s forwards;
+}
+
+#scroll-cue span {
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(245,242,232,.25);
+}
+
+#scroll-cue svg {
+  animation: bobDown 1.8s ease-in-out infinite;
+}
+
+/* ─── CALCULATOR SECTION ──────────────────────────────────────── */
+#calculator {
+  background: var(--cream);
+  padding: 80px 24px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#calc-inner {
+  width: 100%;
+  max-width: 560px;
+}
+
+#calc-heading {
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 36px;
+}
+
+/* Input */
+#input-wrap {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+#usd-label {
+  display: block;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+#input-row {
+  display: flex;
+  align-items: center;
+  background: var(--cream-warm);
+  border: 1.5px solid var(--cream-deep);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+
+#input-row:focus-within {
+  border-color: var(--forest-mid);
+}
+
+#usd-sym {
+  padding: 0 16px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  border-right: 1.5px solid var(--cream-deep);
+  line-height: 56px;
+  user-select: none;
+}
+
+#usd-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+  padding: 0 18px;
+  height: 56px;
+  outline: none;
+  min-width: 0;
+}
+
+#usd-input::placeholder { color: var(--ink-faint); }
+
+/* Result rows */
+#result-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-radius: 6px;
+  background: var(--cream-warm);
+  border: 1.5px solid var(--cream-deep);
+  transition: border-color .2s;
+  gap: 12px;
+}
+
+.result-row.best {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.result-row.incentive-row {
+  background: var(--cream);
+  border-style: dashed;
+}
+
+.row-label {
+  font-size: .72rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 400;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.result-row.best .row-label {
+  color: rgba(245,242,232,.55);
+}
+
+.result-row.incentive-row .row-label {
+  color: var(--teal);
+}
+
+.row-amount {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.02em;
+}
+
+.incentive-amt {
+  color: var(--teal);
+  font-size: 1.25rem;
+}
+
+/* Static (non-editable) row value */
+.row-static {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.row-static-val {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.02em;
+}
+
+/* Editable BDT fields inside rows */
+.row-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 4px;
+  padding: 0 10px 0 10px;
+  transition: border-color .2s, background .2s;
+}
+
+.result-row.best .row-input-wrap {
+  background: rgba(245,242,232,.1);
+  border-color: rgba(245,242,232,.2);
+}
+
+.result-row .row-input-wrap:focus-within {
+  border-color: var(--forest-lt);
+  background: rgba(0,0,0,.07);
+}
+
+.result-row.best .row-input-wrap:focus-within {
+  border-color: rgba(245,242,232,.5);
+  background: rgba(245,242,232,.15);
+}
+
+.row-currency {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.row-currency.light { color: rgba(245,242,232,.5); }
+
+.row-input {
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+  width: 190px;
+  height: 46px;
+  outline: none;
+  padding: 0 4px;
+  min-width: 0;
+  /* hide browser spinners */
+  -moz-appearance: textfield;
+}
+
+.row-input::-webkit-inner-spin-button,
+.row-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.row-input.light { color: var(--cream); }
+.row-input.light::placeholder { color: rgba(245,242,232,.3); }
+
+@media (max-width: 400px) {
+  .row-input { width: 100px; font-size: 1.1rem; }
+}
+
+/* Divider line */
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cream-deep), transparent);
+  margin: 0;
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────────── */
+#footer {
+  background: var(--cream);
+  padding: 20px 36px 36px;
+  text-align: center;
+}
+
+#footer p {
+  font-size: .65rem;
+  color: var(--ink-faint);
+  letter-spacing: .04em;
+  line-height: 1.8;
+}
+
+/* ─── ANIMATIONS ──────────────────────────────────────────────── */
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,.45); }
+  50%       { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+}
+
+@keyframes bobDown {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-delay: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ─── MOBILE ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  #topbar { padding: 22px 20px; }
+
+  #boosted-rate { letter-spacing: -.03em; }
+
+  #market-row { flex-direction: column; gap: 6px; }
+
+  .result-row { padding: 12px 14px; }
+  .row-input { width: 150px; }
+}
+
+@media (max-width: 360px) {
+  #usd-input { font-size: 1.25rem; }
+}
+
+/* ─── STALE STATE ─────────────────────────────────────────────── */
+.stale #boosted-rate,
+.stale #market-rate {
+  opacity: .3;
+  text-decoration: line-through;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════════ -->
+<section id="hero" aria-label="Live exchange rate">
+
+  <!-- Topbar -->
+  <div id="topbar">
+    <span id="brand">P2PCalculator</span>
+    <div id="lang-toggle" role="group" aria-label="Language">
+      <button class="lang-btn active" id="btn-en" onclick="setLang('en')" aria-pressed="true">EN</button>
+      <button class="lang-btn"        id="btn-bn" onclick="setLang('bn')" aria-pressed="false">বাংলা</button>
+    </div>
+  </div>
+
+  <!-- Rate block -->
+  <div id="rate-block">
+
+    <div id="incentive-tag">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1"/>
+        <path d="M5 3v4M3 5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span id="t-incentive-tag">+2.5% government incentive</span>
+    </div>
+
+    <div id="boosted-rate" aria-label="Boosted rate">
+      <span class="currency-sym">৳</span><span id="boosted-val">—</span>
+    </div>
+
+    <div id="market-row">
+      <span id="market-rate" aria-label="Market rate">
+        <span class="currency-sym" style="font-family:var(--font-ui);font-size:.85em;color:inherit">৳</span><span id="market-val">—</span>
+      </span>
+      <span id="market-label" id="t-market-label">market</span>
+    </div>
+
+    <div id="status-row">
+      <div id="pulse-dot" aria-hidden="true"></div>
+      <span id="timestamp" aria-live="polite">—</span>
+    </div>
+
+  </div>
+
+  <!-- Scroll cue -->
+  <div id="scroll-cue" aria-hidden="true">
+    <span id="t-calc-cue">calculate</span>
+    <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+      <path d="M1 1l8 8 8-8" stroke="rgba(245,242,232,.35)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CALCULATOR
+═══════════════════════════════════════════════════════════════════ -->
+<section id="calculator" aria-label="Calculator">
+  <div id="calc-inner">
+
+    <p id="calc-heading" id="t-calc-heading">Amount calculator</p>
+
+    <!-- USD input -->
+    <div id="input-wrap">
+      <label id="usd-label" for="usd-input" id="t-usd-label">You send (USD)</label>
+      <div id="input-row">
+        <span id="usd-sym">$</span>
+        <input
+          id="usd-input"
+          type="number"
+          inputmode="decimal"
+          value="1"
+          min="0"
+          max="999999"
+          aria-label="USD amount"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <!-- Breakdown rows -->
+    <div id="result-rows">
+
+      <!-- Row 1: Base price (static) -->
+      <div class="result-row" id="row-market">
+        <span class="row-label" id="t-row-market">Base price</span>
+        <div class="row-static">
+          <span class="row-currency">৳</span>
+          <span id="base-out" class="row-static-val">—</span>
+        </div>
+      </div>
+
+      <!-- Row 2: Incentive amount (read-only) -->
+      <div class="result-row incentive-row" id="row-incentive">
+        <span class="row-label" id="t-row-incentive">Incentive (+2.5%)</span>
+        <span class="row-amount incentive-amt" id="incentive-out">—</span>
+      </div>
+
+      <!-- Row 3: Total with incentive (editable BDT) -->
+      <div class="result-row best" id="row-boosted">
+        <span class="row-label" id="t-row-boosted">Total with incentive ✦</span>
+        <div class="row-input-wrap">
+          <span class="row-currency light">৳</span>
+          <input
+            id="total-input"
+            class="row-input light"
+            type="number"
+            inputmode="decimal"
+            aria-label="Total with incentive in BDT"
+            autocomplete="off"
+          >
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ─── FOOTER ─────────────────────────────────────────────────── -->
+<footer id="footer">
+  <p id="t-footer">Rates are indicative and for reference only. Not financial advice.<br>
+  Bangladesh Bank 2.5% remittance incentive applied automatically to legal channel transfers.</p>
+</footer>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATA LAYER
+   Swap fetchRate() to call /api/rate returning { market, incentive, updated_at }
+═══════════════════════════════════════════════════════════════ */
+const MOCK = {
+  market:     121.9,
+  incentive:  0.025,
+  updated_at: Date.now() - 2 * 60 * 1000   // 2 minutes ago
+};
+
+const STALE_MS = 30 * 60 * 1000; // 30 minutes
+
+async function fetchRate() {
+  // ── Replace this block with real API call ──
+  // const res = await fetch('/api/rate');
+  // return await res.json();
+  return MOCK;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRANSLATIONS
+═══════════════════════════════════════════════════════════════ */
+const T = {
+  en: {
+    'incentive-tag': '+2.5% government incentive',
+    'market-label':  'market',
+    'calc-cue':      'calculate',
+    'calc-heading':  'Amount calculator',
+    'usd-label':     'You send (USD)',
+    'row-market':    'Base price',
+    'row-incentive': 'Incentive (+2.5%)',
+    'row-boosted':   'Total with incentive ✦',
+    'updated':       (m) => `Updated ${m} min ago`,
+    'just-now':      'Updated just now',
+    'stale':         'Data unavailable',
+    'footer':        'Rates are indicative and for reference only. Not financial advice.\nBangladesh Bank 2.5% remittance incentive applied automatically to legal channel transfers.'
+  },
+  bn: {
+    'incentive-tag': '+২.৫% সরকারি প্রণোদনা',
+    'market-label':  'বাজার দর',
+    'calc-cue':      'হিসাব করুন',
+    'calc-heading':  'পরিমাণ ক্যালকুলেটর',
+    'usd-label':     'আপনি পাঠাচ্ছেন (USD)',
+    'row-market':    'বেস মূল্য',
+    'row-incentive': 'প্রণোদনা (+২.৫%)',
+    'row-boosted':   'মোট (প্রণোদনা সহ) ✦',
+    'updated':       (m) => `আপডেট ${tobn(m)} মিনিট আগে`,
+    'just-now':      'এইমাত্র আপডেট হয়েছে',
+    'stale':         'তথ্য পাওয়া যাচ্ছে না',
+    'footer':        'রেটগুলো নির্দেশক এবং শুধুমাত্র তথ্যের জন্য। আর্থিক পরামর্শ নয়।\nবাংলাদেশ ব্যাংকের ২.৫% প্রণোদনা বৈধ চ্যানেলে স্বয়ংক্রিয়ভাবে যোগ হয়।'
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   BENGALI NUMERALS
+═══════════════════════════════════════════════════════════════ */
+const EN_DIGITS = ['0','1','2','3','4','5','6','7','8','9'];
+const BN_DIGITS = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+
+function tobn(str) {
+  return String(str).replace(/[0-9]/g, d => BN_DIGITS[+d]);
+}
+
+/* South Asian grouping: last 3 digits, then groups of 2 */
+function formatBDT(n, lang) {
+  const fixed = n.toFixed(2);
+  const [intPart, decPart] = fixed.split('.');
+
+  let grouped;
+  if (lang === 'bn') {
+    // South Asian grouping
+    const digits = intPart.replace(/\D/g, '');
+    if (digits.length <= 3) {
+      grouped = digits;
+    } else {
+      const last3  = digits.slice(-3);
+      const rest   = digits.slice(0, -3);
+      const pairs  = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+      grouped = pairs + ',' + last3;
+    }
+    return '৳' + tobn(grouped) + '.' + tobn(decPart);
+  } else {
+    grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return '৳' + grouped + '.' + decPart;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════ */
+let lang = localStorage.getItem('p2p_lang') || 'en';
+let rateData = null;
+
+/* ═══════════════════════════════════════════════════════════════
+   LANG
+═══════════════════════════════════════════════════════════════ */
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('p2p_lang', l);
+  document.body.classList.toggle('bn', l === 'bn');
+  document.getElementById('btn-en').classList.toggle('active', l === 'en');
+  document.getElementById('btn-bn').classList.toggle('active', l === 'bn');
+  document.getElementById('btn-en').setAttribute('aria-pressed', l === 'en');
+  document.getElementById('btn-bn').setAttribute('aria-pressed', l === 'bn');
+
+  // Re-render with new lang
+  applyTranslations();
+  if (rateData) renderRate(rateData);
+  calcUpdate();
+}
+
+function applyTranslations() {
+  const t = T[lang];
+  // Map text ids to element ids
+  [
+    ['t-incentive-tag', 'incentive-tag'],
+    ['t-calc-cue',      'calc-cue'],
+    ['t-calc-heading',  'calc-heading'],
+    ['t-usd-label',     'usd-label'],
+    ['t-row-market',    'row-market'],
+    ['t-row-incentive', 'row-incentive'],
+    ['t-row-boosted',   'row-boosted'],
+  ].forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el && t[key]) el.textContent = t[key];
+  });
+
+  // Market label (in hero)
+  const ml = document.getElementById('market-label');
+  if (ml) ml.textContent = t['market-label'];
+
+  // Footer (has newline)
+  const ft = document.getElementById('t-footer');
+  if (ft) ft.innerHTML = t['footer'].replace('\n','<br>');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER RATE
+═══════════════════════════════════════════════════════════════ */
+function renderRate(data) {
+  const stale = (Date.now() - data.updated_at) > STALE_MS;
+  const hero  = document.getElementById('hero');
+  hero.classList.toggle('stale', stale);
+
+  if (stale) {
+    document.getElementById('boosted-val').textContent = '—';
+    document.getElementById('market-val').textContent  = '—';
+    document.getElementById('timestamp').textContent   = T[lang]['stale'];
+    return;
+  }
+
+  const boosted = data.market * (1 + data.incentive);
+
+  // Format rate digits only (no ৳ prefix, it's in the DOM)
+  const fmtRate = (n) => {
+    const s = n.toFixed(2);
+    return lang === 'bn' ? tobn(s) : s;
+  };
+
+  document.getElementById('boosted-val').textContent = fmtRate(boosted);
+  document.getElementById('market-val').textContent  = fmtRate(data.market);
+
+  // Timestamp
+  const mins = Math.floor((Date.now() - data.updated_at) / 60000);
+  const ts   = mins < 1 ? T[lang]['just-now'] : T[lang]['updated'](mins);
+  document.getElementById('timestamp').textContent = ts;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CALCULATOR — three-way binding
+   Source of truth: whichever field was last edited.
+   usd-input  → drives base-input and total-input
+   base-input → drives usd-input and total-input
+   total-input→ drives usd-input and base-input
+═══════════════════════════════════════════════════════════════ */
+
+let _updating = false; // re-entrancy guard
+
+function calcFrom(source) {
+  if (_updating || !rateData) return;
+  const stale = (Date.now() - rateData.updated_at) > STALE_MS;
+  if (stale) return;
+
+  _updating = true;
+
+  const market  = rateData.market;
+  const factor  = 1 + rateData.incentive;
+
+  const usdEl   = document.getElementById('usd-input');
+  const totalEl = document.getElementById('total-input');
+
+  let usd, base, total, incentive;
+
+  if (source === 'usd') {
+    usd       = parseFloat(usdEl.value) || 0;
+    base      = usd * market;
+    incentive = base * rateData.incentive;
+    total     = base + incentive;
+    totalEl.value = total.toFixed(2);
+  } else if (source === 'total') {
+    total     = parseFloat(totalEl.value) || 0;
+    base      = total / factor;
+    incentive = base * rateData.incentive;
+    usd       = market > 0 ? base / market : 0;
+    usdEl.value  = usd.toFixed(4);
+  }
+
+  // Update base price display (static)
+  document.getElementById('base-out').textContent = (base || 0).toFixed(2);
+
+  // Update incentive display — always English numerals
+  document.getElementById('incentive-out').textContent =
+    (incentive >= 0 ? '+' : '') + formatBDT(incentive || 0, 'en');
+
+  _updating = false;
+}
+
+document.getElementById('usd-input')  .addEventListener('input', () => calcFrom('usd'));
+document.getElementById('total-input').addEventListener('input', () => calcFrom('total'));
+
+function calcUpdate() {
+  calcFrom('usd');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+(async function init() {
+  // Apply saved lang immediately
+  if (lang === 'bn') {
+    document.body.classList.add('bn');
+    document.getElementById('btn-en').classList.remove('active');
+    document.getElementById('btn-bn').classList.add('active');
+    document.getElementById('btn-en').setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-bn').setAttribute('aria-pressed', 'true');
+  }
+  applyTranslations();
+
+  try {
+    rateData = await fetchRate();
+    renderRate(rateData);
+    calcUpdate();
+  } catch (e) {
+    document.getElementById('boosted-val').textContent = '—';
+    document.getElementById('market-val').textContent  = '—';
+    document.getElementById('timestamp').textContent   = T[lang]['stale'];
+  }
+})();
+</script>
+</body>
+</html>
