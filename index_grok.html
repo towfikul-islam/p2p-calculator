@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Rate • USD to BDT with 2.5% Incentive</title>
+  <meta name="description" content="Live USD to BDT rate with Bangladesh government's 2.5% remittance incentive. Get more Taka.">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #f8f5f0;
+      --text: #1c1c1a;
+      --accent: #1e3a2f;
+      --gold: #d4a017;
+      --teal: #0f766e;
+      --gray: #6b7280;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f0e;
+        --text: #f1f1ef;
+        --accent: #a3e6d7;
+      }
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+    
+    .display-font { font-family: 'Space Grotesk', sans-serif; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #1e3a2f 0%, #0f241c 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(212,160,23,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 32px 0;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lang-toggle {
+      background: rgba(255,255,255,0.1);
+      border-radius: 9999px;
+      padding: 4px;
+      display: flex;
+      backdrop-filter: blur(10px);
+    }
+
+    .lang-btn {
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .lang-btn.active {
+      background: white;
+      color: #1e3a2f;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .hero-content {
+      max-width: 620px;
+      margin-top: 40px;
+    }
+
+    .incentive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 160, 23, 0.2);
+      color: #f4d38a;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .rate-display {
+      font-size: clamp(4.5rem, 12vw, 8.5rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      margin: 16px 0 8px;
+    }
+
+    .rate-display small {
+      font-size: 0.35em;
+      opacity: 0.7;
+      vertical-align: super;
+      margin-right: 4px;
+    }
+
+    .market-rate {
+      font-size: 1.35rem;
+      opacity: 0.75;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .timestamp {
+      font-size: 0.9rem;
+      opacity: 0.6;
+      margin-top: 32px;
+    }
+
+    /* CALCULATOR */
+    .calculator {
+      margin-top: -80px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .calc-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      padding: 48px 40px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .calc-card { background: #1a1a18; }
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .input-group {
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      background: #f8f5f0;
+      border: 2px solid #e5e0d3;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border 0.2s;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      .input-wrapper { background: #252521; border-color: #3a3a35; }
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--teal);
+    }
+
+    .currency-symbol {
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #666;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 1.75rem;
+      font-weight: 500;
+      padding: 18px 0;
+      outline: none;
+    }
+
+    /* Result Rows */
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      background: #f8f5f0;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 1.25rem;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      .result-row { background: #252521; }
+    }
+
+    .result-row.best {
+      background: linear-gradient(90deg, #1e3a2f, #2a5243);
+      color: white;
+      font-weight: 600;
+      position: relative;
+    }
+    
+    .result-row.best::after {
+      content: "BEST RATE";
+      position: absolute;
+      top: -10px;
+      right: 24px;
+      background: #d4a017;
+      color: #1e3a2f;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 12px;
+      border-radius: 9999px;
+      letter-spacing: 0.5px;
+    }
+
+    .result-label {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    .incentive {
+      color: #14b8a6;
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 80px;
+      padding: 0 24px;
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">P2PRate</div>
+        <div class="lang-toggle">
+          <button class="lang-btn active" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" onclick="setLang('bn')">বাংলা</button>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <div class="incentive-badge">
+          <span>🎁</span>
+          <span>+2.5% Government Remittance Incentive</span>
+        </div>
+        
+        <div style="font-size:1.1rem; opacity:0.9; margin-bottom:8px;">You receive</div>
+        <div class="rate-display display-font" id="boosted-rate">
+          <small>৳</small><span id="boosted-val">—</span>
+        </div>
+        
+        <div class="market-rate">
+          Market rate: <span id="market-val">—</span> ৳/USD
+          <span style="margin-left:auto; font-size:0.95rem; opacity:0.7;" id="timestamp">—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <div class="calculator">
+    <div class="container">
+      <div class="calc-card">
+        <p class="section-title">How much will your family receive?</p>
+
+        <!-- USD Input -->
+        <div class="input-group">
+          <label for="usd-input">You send (USD)</label>
+          <div class="input-wrapper">
+            <span class="currency-symbol">$</span>
+            <input type="number" id="usd-input" value="1000" step="0.01" min="0">
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="result-row">
+          <span class="result-label">Base amount (Market rate)</span>
+          <span id="base-out">—</span>
+        </div>
+
+        <div class="result-row">
+          <span class="result-label incentive">+2.5% Government Incentive</span>
+          <span class="incentive" id="incentive-out">—</span>
+        </div>
+
+        <div class="result-row best">
+          <span class="result-label">Total your family receives</span>
+          <span id="total-out">—</span>
+        </div>
+
+        <div style="margin-top:32px; font-size:0.9rem; color:#666; text-align:center;">
+          Rate last updated: <span id="last-updated">just now</span><br>
+          <small>Indicative rate • For reference only</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    The 2.5% cash incentive is provided by the Government of Bangladesh on eligible wage earner remittances through authorized banking channels.<br>
+    Not financial advice. Always verify with your bank or licensed remittance provider.
+  </footer>
+
+  <script>
+    // Mock data (replace with real API fetch)
+    let rateData = {
+      market: 122.75,        // current market rate
+      incentive: 0.025,
+      updated_at: Date.now()
+    };
+
+    let currentLang = 'en';
+
+    const translations = {
+      en: {
+        boosted: "You receive",
+        base: "Base amount (Market rate)",
+        incentive: "+2.5% Government Incentive",
+        total: "Total your family receives"
+      },
+      bn: {
+        boosted: "আপনার পরিবার পাবে",
+        base: "বেস অ্যামাউন্ট (বাজার দর)",
+        incentive: "+২.৫% সরকারি প্রণোদনা",
+        total: "মোট পাবে"
+      }
+    };
+
+    function formatBDT(num) {
+      return num.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function updateRates() {
+      const boosted = rateData.market * (1 + rateData.incentive);
+      
+      document.getElementById('boosted-val').textContent = boosted.toFixed(2);
+      document.getElementById('market-val').textContent = rateData.market.toFixed(2);
+      
+      const mins = Math.floor((Date.now() - rateData.updated_at) / 60000);
+      document.getElementById('timestamp').textContent = mins < 1 ? "just now" : `${mins} min ago`;
+    }
+
+    function calculate() {
+      const usd = parseFloat(document.getElementById('usd-input').value) || 0;
+      const base = usd * rateData.market;
+      const incentiveAmt = base * rateData.incentive;
+      const total = base + incentiveAmt;
+
+      document.getElementById('base-out').textContent = '৳ ' + formatBDT(base);
+      document.getElementById('incentive-out').textContent = '+৳ ' + formatBDT(incentiveAmt);
+      document.getElementById('total-out').textContent = '৳ ' + formatBDT(total);
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      // Add more translation logic here if needed
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+      });
+      calculate();
+    }
+
+    // Event listeners
+    document.getElementById('usd-input').addEventListener('input', calculate);
+
+    // Initialize
+    window.onload = () => {
+      updateRates();
+      calculate();
+      
+      // Simulate live update every 5 minutes
+      setInterval(() => {
+        rateData.updated_at = Date.now();
+        updateRates();
+      }, 300000);
+    };
+  </script>
+</body>
+</html>
